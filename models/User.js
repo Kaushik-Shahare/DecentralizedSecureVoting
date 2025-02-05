@@ -33,7 +33,7 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["Admin", "User", "Farmer"],
+      enum: ["Admin", "User"],
       default: "User",
     },
     gender: {
@@ -50,8 +50,20 @@ const userSchema = new mongoose.Schema(
         return date;
       },
     },
+    // New fields for MetaMask authentication
+    walletAddress: {
+      type: String,
+      default: null,
+      lowercase: true,
+      unique: true,
+      sparse: true,
+    },
+    nonce: {
+      type: String,
+      default: "0",
+    },
   },
-  { timestamps: true, collection: "FarmerApp" }
+  { timestamps: true, collection: "DApp" }
 );
 
 const User = mongoose.model("User", userSchema);

@@ -3,6 +3,8 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const authRouter = require("./routes/authRoutes.js");
+const votingRouter = require("./routes/votingRoutes.js");
+const metamaskAuthRoutes = require("./routes/metamaskAuthRoutes.js");
 // const profileRouter = require("./routes/profileRoutes.js");
 const passport = require("passport");
 const morgan = require("morgan");
@@ -13,6 +15,7 @@ dotenv.config();
 const PORT = process.env.PORT || 5000;
 const app = express();
 
+// Logging middleware
 const morganFormat =
   ":method :url :status :res[content-length] - :response-time ms";
 app.use(
@@ -31,6 +34,14 @@ app.use(
     },
   })
 );
+
+// New error logging middleware
+app.use((err, req, res, next) => {
+  logger.error(`Error: ${err.message}`, { stack: err.stack });
+  res
+    .status(err.status || 500)
+    .json({ error: err.message || "Internal Server Error" });
+});
 
 app.use(express.json());
 app.use(passport.initialize());
@@ -55,6 +66,8 @@ mongoose
   });
 
 app.use("/api/auth", authRouter);
+app.use("/api/metamask", metamaskAuthRoutes);
+app.use("/api/voting", votingRouter);
 // app.use("/api/profile", profileRouter);
 
 app.get("/", (req, res) => {
