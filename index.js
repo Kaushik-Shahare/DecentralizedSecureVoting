@@ -55,6 +55,7 @@ mongoose
   });
 
 app.use("/api/auth", authRouter);
+app.use("/api/event", require("./routes/eventRoutes.js"));
 // app.use("/api/profile", profileRouter);
 
 app.get("/", (req, res) => {
