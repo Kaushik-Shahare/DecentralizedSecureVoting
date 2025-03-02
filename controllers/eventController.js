@@ -1,5 +1,24 @@
 const Event = require("../models/Event");
 
+
+// Get all events creted by the user
+const getEvents = async (req, res) => {
+  // Check that req.user exists
+  if (!req.user || !req.user.id) {
+    return res.status(401).json({ message: "Unauthorized: No user found" });
+  }
+  try {
+    // Get list of events created by the user and sorted by latest first
+    const events = await Event.find({ createdBy: req.user.id }).sort({
+      createdAt: -1,
+    });
+    res.status(200).json({ events });
+  } catch (error) {
+    console.error("Get events error: ", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
+
 // Create a new event
 const createEvent = async (req, res) => {
   // Check that req.user exists
@@ -72,9 +91,15 @@ const getEventStats = async (req, res) => {
     if (!event) {
       return res.status(404).json({ message: "Event not found" });
     }
-    if (event.createdBy.toString() !== req.user.id) {
-      return res.status(403).json({ message: "Not authorized" });
-    }
+
+
+    // Should only allow the creator of the event to access the stats?
+
+    // if (event.createdBy.toString() !== req.user.id) {
+      // return res.status(403).json({ message: "Not authorized" });
+    // }
+
+
     // Convert event to plain object and map voters to include a fullname field
     const eventObj = event.toObject();
     if (Array.isArray(eventObj.voters)) {
@@ -116,4 +141,54 @@ const getEventDetails = async (req, res) => {
   }
 };
 
-module.exports = { createEvent, voteEvent, getEventStats, getEventDetails };
+const editEvent = async (req, res) => {
+  const { eventId } = req.params;
+  const { title, description, imageUrl, options } = req.body;
+  try {
+    let event = await Event
+      .findOne({ eventId })
+      .populate("createdBy", "id");
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+    // Check if the user is the creator of the event
+    if (event.createdBy.id !== req.user.id) {
+      return res.status(403).json({ message: "Not authorized" });
+    }
+    event.title = title;
+    event.description = description;
+    event.imageUrl = imageUrl;
+    event.options = options;
+    await event.save();
+    res.status(200).json({ message: "Event updated" });
+  }
+  catch (error) {
+    console.error("Edit event error: ", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+const deleteEvent = async (req, res) => {
+  const { eventId } = req.params;
+  try {
+    let event = await Event
+      .findOne({ eventId })
+      .populate("createdBy", "id");
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+    // Check if the user is the creator of the event
+    if (event.createdBy.id !== req.user.id) {
+      return res.status(403).json({ message: "Not authorized" });
+    }
+    await event.remove();
+    res.status(200).json({ message: "Event deleted" });
+  }
+  catch (error) {
+    console.error("Delete event error: ", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+
+module.exports = { getEvents, createEvent, voteEvent, getEventStats, getEventDetails, editEvent, deleteEvent };
