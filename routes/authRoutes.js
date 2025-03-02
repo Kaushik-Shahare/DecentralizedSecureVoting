@@ -1,6 +1,8 @@
 const express = require("express");
 const authRouter = express.Router();
 const {
+  getProfile,
+  editProfile,
   signup,
   signin,
   forgotPassword,
@@ -9,7 +11,10 @@ const {
 const passport = require("passport");
 const dotenv = require("dotenv");
 dotenv.config();
+const auth = require("../middlewares/auth");
 
+authRouter.get("/profile", auth, getProfile);
+authRouter.put("/profile", auth, editProfile);
 authRouter.post("/signup", signup);
 authRouter.post("/signin", signin);
 
