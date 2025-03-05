@@ -19,6 +19,26 @@ const getEvents = async (req, res) => {
   }
 }
 
+// Get Events User participated in 
+const getEventsUserParticipated = async (req, res) => {
+  // Check that req.user exists
+  if (!req.user || !req.user.id) {
+    return res.status(401).json({ message: "Unauthorized: No user found" });
+  }
+  try {
+    // Get list of events where the user has voted
+    const events = await Event.find({ voters: req.user.id }).sort({
+      createdAt: -1,
+    });
+    res.status(200).json({ events });
+  } catch (error) {
+    console.error("Get events user participated in error: ", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+
+
 // Create a new event
 const createEvent = async (req, res) => {
   // Check that req.user exists
@@ -191,4 +211,4 @@ const deleteEvent = async (req, res) => {
 }
 
 
-module.exports = { getEvents, createEvent, voteEvent, getEventStats, getEventDetails, editEvent, deleteEvent };
+module.exports = { getEvents, getEventsUserParticipated, createEvent, voteEvent, getEventStats, getEventDetails, editEvent, deleteEvent };

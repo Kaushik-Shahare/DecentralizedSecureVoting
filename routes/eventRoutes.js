@@ -1,6 +1,7 @@
 const express = require("express");
 const {
   getEvents,
+  getEventsUserParticipated,
   createEvent,
   getEventDetails,
   voteEvent,
@@ -12,6 +13,7 @@ const router = express.Router();
 const auth = require("../middlewares/auth.js");
 
 router.get("/", auth, getEvents);
+router.get("/events/", auth, getEventsUserParticipated);
 router.post("/create", auth, createEvent);
 router.get("/:eventId", auth, getEventDetails);
 router.post("/:eventId/vote", auth, voteEvent);
